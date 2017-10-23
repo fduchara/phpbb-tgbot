@@ -1,0 +1,17 @@
+[Unit]
+Description=Telegram bot phpbb 
+
+Wants=network.target
+After=network.target
+
+[Install]
+WantedBy=default.target
+
+[Service]
+Type=simple
+ExecStart=/opt/tg/tgforum -c /opt/tg/config.yaml
+
+KillSignal=SIGKILL
+KillMode=process
+
+Restart=on-failure
