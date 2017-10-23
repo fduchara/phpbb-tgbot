@@ -3,5 +3,5 @@ ChatId:      chat id(int64)
 UrlLogin:    "http://your server/forum/ucp.php?mode=login"
 UrlFindNew:	"http://your server/forum/search.php?search_id=unreadposts"
 urlMarkRead:	"http://your server/forum/index.php?mark=forums"
-Username:    "username"
+UserName:    "username"
 Password:    "password"
