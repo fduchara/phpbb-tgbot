@@ -1,0 +1,11 @@
+.DS_Store
+/.vscode/
+/bin/
+/files/
+/pkg/
+*.out
+*.crt
+*.key
+test*
+*config.yaml*
+/src/vendor/
