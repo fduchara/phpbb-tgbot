@@ -7,7 +7,7 @@ install trash (vendoring)
 
 https://github.com/rancher/trash ( get -u github.com/rancher/trash )
 
-install dependences: --directory -C src
+install dependences: trash --directory -C src
 
 
 assembly program: make build
