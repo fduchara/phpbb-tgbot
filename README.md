@@ -16,3 +16,5 @@ assembly program: make build
 edit config/config.yaml
 
 run: bin/bot -c config/config.yaml
+
+run debug : bin/bot -c config/config.yaml -v true
