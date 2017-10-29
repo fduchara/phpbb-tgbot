@@ -28,29 +28,30 @@ type ConfigStr struct { // структура файла конфига
 
 func main() {
 
-	flag.Parse()                                 // парсим параметры
-	Conf := ReadConf()                           // читаю конфиг из аргумента или дефолтного пути
-
-	if Conf.BotToken == "" || Conf.ChatId == 0 { // проверка конфигурации.
-		log.Print("No configure telegram-bot")
-	} else {
-		log.Print("Connect telegram-bot")
-	}
+	flag.Parse()       // парсим параметры
+	Conf := ReadConf() // читаю конфиг из аргумента или дефолтного пути
 
 	bot, err := tgbotapi.NewBotAPI(Conf.BotToken)
 	if err != nil {
 		log.Panic(err)
 	}
-	bot.Debug = true
-	log.Printf("Authorized on account %s", bot.Self.UserName)
+
+	bot.Debug = *confDeug
+
+	if *confDeug {
+		log.Printf("Authorized on account %s", bot.Self.UserName)
+	}
+
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
 
 	go func() {
 		for {
-			reply := parseforum.GetNew(Conf.UrlLogin, Conf.UrlFindNew, Conf.UrlMarkRead, Conf.UserName, Conf.Password)
+			reply := parseforum.GetNew(Conf.UrlLogin, Conf.UrlFindNew, Conf.UrlMarkRead, Conf.UserName, Conf.Password, *confDeug)
+			if *confDeug {
+				log.Printf("GetNew return: " + reply)
+			}
 			if reply != "" {
-				log.Printf(reply)
 				reply = "Новое сообщение на форуме в теме: " + reply
 				msg := tgbotapi.NewMessage(Conf.ChatId, reply)
 				bot.Send(msg)
@@ -69,9 +70,11 @@ func main() {
 				msg := tgbotapi.NewMessage(update.Message.Chat.ID, reply)
 				bot.Send(msg)
 			case "new":
-				reply := "Проверка сообщений. \n Новое сообщение на форуме в теме: " 
-				reply = reply + parseforum.GetNew(Conf.UrlLogin, Conf.UrlFindNew, Conf.UrlMarkRead, Conf.UserName, Conf.Password)
-				log.Printf(reply)
+				reply := "Проверка сообщений. \n Новое сообщение на форуме в теме: "
+				reply = reply + parseforum.GetNew(Conf.UrlLogin, Conf.UrlFindNew, Conf.UrlMarkRead, Conf.UserName, Conf.Password, *confDeug)
+				if *confDeug {
+					log.Printf("GetNew return: " + reply)
+				}
 				msg := tgbotapi.NewMessage(Conf.ChatId, reply)
 				bot.Send(msg)
 			}
@@ -80,16 +83,23 @@ func main() {
 }
 
 func ReadConf() ConfigStr {
-	log.Print("Open config file")
+	if *confDeug {
+		log.Print("Open config file")
+	}
 	data, err := ioutil.ReadFile(*configFile)
 	if err != nil {
 		log.Fatal(err)
 	}
 	var Conf ConfigStr
-	log.Print("Parse config file")
+	if *confDeug {
+		log.Print("Parse config file")
+	}
 	err = yaml.Unmarshal([]byte(data), &Conf)
 	if err != nil {
 		log.Fatal(err)
+	}
+	if *confDeug {
+		log.Println(Conf)
 	}
 	return Conf
 }

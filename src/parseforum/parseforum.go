@@ -2,12 +2,13 @@ package parseforum
 
 import (
 	"golang.org/x/net/html"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
 )
 
-func GetNew(urlLogin string, urlFindNew string, urlMarkRead string, username string, password string) string {
+func GetNew(urlLogin string, urlFindNew string, urlMarkRead string, username string, password string, debug bool) string {
 
 	form := url.Values{
 		"username": {username},
@@ -15,26 +16,43 @@ func GetNew(urlLogin string, urlFindNew string, urlMarkRead string, username str
 		"login":    {"Login"},
 	}
 
-	log.Print("Login forum")
+	if debug {
+		log.Print("Login forum")
+	}
 	resp, err := http.PostForm(urlLogin, form)
+	defer resp.Body.Close()
 	if err != nil {
 		log.Panic(err)
 	}
+	if debug {
+		log.Print(resp)
+		body, _ := ioutil.ReadAll(resp.Body)
+		log.Println("response:\n", string(body))
+	}
 
-	defer resp.Body.Close()
 
-	cookis := resp.Cookies()[len(resp.Cookies())-1]
+	cookies := resp.Cookies()[len(resp.Cookies())-1]
+	if debug {
+		log.Print("Cookies")
+		log.Print(cookies)
+	}
 
-	log.Print("Check new messages")
+	if debug {
+		log.Print("Check new messages")
+	}
 	req, err := http.NewRequest("GET", urlFindNew, nil)
 	if err != nil {
 		log.Panic(err)
 	}
-
-	req.AddCookie(cookis)
+	req.AddCookie(cookies)
 	resp, err = http.DefaultClient.Do(req)
 	if err != nil {
 		log.Panic(err)
+	}
+	if debug {
+		log.Print(resp)
+		body, _ := ioutil.ReadAll(resp.Body)
+		log.Println("response:\n", string(body))
 	}
 
 	reply := ""
@@ -44,17 +62,25 @@ func GetNew(urlLogin string, urlFindNew string, urlMarkRead string, username str
 
 		switch {
 		case tt == html.ErrorToken:
-			log.Print("Mark read all messages")
+
+			if debug {
+				log.Print("Mark read all messages")
+			}
 			req, err = http.NewRequest("GET", urlMarkRead, nil)
 			if err != nil {
 				log.Panic(err)
 			}
-
-			req.AddCookie(cookis)
+			req.AddCookie(cookies)
 			resp, err = http.DefaultClient.Do(req)
 			if err != nil {
 				log.Panic(err)
 			}
+			if debug {
+				log.Print(resp)
+				body, _ := ioutil.ReadAll(resp.Body)
+				log.Println("response:\n", string(body))
+			}
+
 			return reply
 
 		case tt == html.StartTagToken:
@@ -65,7 +91,9 @@ func GetNew(urlLogin string, urlFindNew string, urlMarkRead string, username str
 					if tt == html.TextToken {
 						t := z.Token()
 						reply = reply + "\n " + t.Data
-						log.Println(t.Data)
+						if debug {
+							log.Println(t.Data)
+						}
 					}
 				}
 			}
