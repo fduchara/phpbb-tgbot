@@ -19,6 +19,7 @@ var (
 type ConfigStr struct { // структура файла конфига
 	BotToken    string `yaml:"BotToken"`
 	ChatId      int64  `yaml:"ChatId"`
+	ForumUrl	string `yaml:"ForumUrl"`
 	UrlLogin    string `yaml:"UrlLogin"`
 	UrlFindNew  string `yaml:"UrlFindNew"`
 	UrlMarkRead string `yaml:"UrlMarkRead"`
@@ -47,7 +48,7 @@ func main() {
 
 	go func() {
 		for {
-			reply := parseforum.GetNew(Conf.UrlLogin, Conf.UrlFindNew, Conf.UrlMarkRead, Conf.UserName, Conf.Password, *confDeug)
+			reply := parseforum.GetNew(Conf.ForumUrl, Conf.UserName, Conf.Password, *confDeug)
 			if *confDeug {
 				log.Printf("GetNew return: " + reply)
 			}
@@ -71,7 +72,7 @@ func main() {
 				bot.Send(msg)
 			case "new":
 				reply := "Проверка сообщений. \n Новое сообщение на форуме в теме: "
-				reply = reply + parseforum.GetNew(Conf.UrlLogin, Conf.UrlFindNew, Conf.UrlMarkRead, Conf.UserName, Conf.Password, *confDeug)
+				reply += parseforum.GetNew(Conf.ForumUrl, Conf.UserName, Conf.Password, *confDeug)
 				if *confDeug {
 					log.Printf("GetNew return: " + reply)
 				}
