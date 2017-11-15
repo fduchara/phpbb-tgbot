@@ -46,31 +46,32 @@ func main() {
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
 
-/*	go func() {
-		for {
-			reply := parseforum.GetNew(Conf.ForumUrl, Conf.UserName, Conf.Password, *confDeug)
-			if *confDeug {
-				log.Printf("GetNew return: " + reply)
-			}
-			if reply != "" {
-				reply = "Новое сообщение на форуме в теме: " + reply
-				msg := tgbotapi.NewMessage(Conf.ChatId, reply)
-				bot.Send(msg)
-			}
-			time.Sleep(60000 * time.Millisecond)
-		}
-	}()
-*/
 	go func() {
 		for {
 			reply := parseforum.GetNew(Conf.ForumUrl, Conf.UserName, Conf.Password, *confDeug)
 			if *confDeug {
 				log.Printf("GetNew return: " + reply)
 			}
+			if reply != "" {
+				reply = "Новое сообщение на форуме: \n" + reply
+				msg := tgbotapi.NewMessage(Conf.ChatId, reply)
+				msg.ParseMode = "markdown"	
+				bot.Send(msg)
+			}
 			time.Sleep(60000 * time.Millisecond)
 		}
 	}()
 
+/*	go func() {
+		for {
+			reply := parseforum.GetNew(Conf.ForumUrl, Conf.UserName, Conf.Password, *confDeug)
+			if *confDeug {
+				log.Printf("GetNew return: " + reply)
+			}
+			time.Sleep(60000 * time.Millisecond)
+		}
+	}()
+*/
 	updates, err := bot.GetUpdatesChan(u)
 
 	for update := range updates {
@@ -87,6 +88,7 @@ func main() {
 					log.Printf("GetNew return: " + reply)
 				}
 				msg := tgbotapi.NewMessage(Conf.ChatId, reply)
+				msg.ParseMode = "markdown"	
 				bot.Send(msg)
 			}
 		}

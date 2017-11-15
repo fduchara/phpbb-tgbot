@@ -12,24 +12,15 @@ import (
 func GetNew(forumurl string, username string, password string, debug bool) string {
 
 	cookies := login(forumurl, username, password, debug)
-	//	urlNewMessage := findNew(forumurl, cookies, debug)
-	//	if urlNewMessage != "" {
-	//		urlNewMessage := forumurl+"/viewtopic.php?"+urlNewMessage
-	urlNewMessage := "http://partizanen.su/forum/viewtopic.php?f=29&t=2679"
-
-	bodyStringsHTML := getBodyHTML(urlNewMessage, cookies, debug)
-
-	//	postMessage := parseMessage(bodyStringsHTML)
-	//	log.Println(postMessage)
-
-	_ = parseMessage(bodyStringsHTML)
-
-	//	message := cleanMessageQuote(postMessage)
-	//	log.Println(message)
-
-	//	}
-
-	return ""
+	urlNewMessage := findNew(forumurl, cookies, debug)
+	postMessage := ""
+	if urlNewMessage != "" {
+		urlNewMessage := forumurl + "/viewtopic.php?" + urlNewMessage
+		//urlNewMessage := "http://partizanen.su/forum/viewtopic.php?f=29&t=2679"
+		bodyStringsHTML := getBodyHTML(urlNewMessage, cookies, debug)
+		postMessage = parseMessage(bodyStringsHTML)
+	}
+	return postMessage
 }
 
 func login(forumurl string, username string, password string, debug bool) *http.Cookie {
@@ -130,18 +121,18 @@ func parseMessage(bodyStringsHTML []string) string {
 
 	for _, s := range bodyStringsHTML {
 
-		them := reThem.FindString(s)
-		if them != "" {
-			them = strings.Replace(them, "</a></div><div style=", "", -1)
-//			log.Println(them)
-			postThem = them
+		if postThem == "" {
+			them := reThem.FindString(s)
+			if them != "" {
+				them = strings.Replace(them, "</a></div><div style=", "", -1)
+				postThem = them
+			}
 		}
 
 		author := reAuthor.FindString(s)
 		if author != "" {
 			author = strings.Replace(author, "<b class=\"postauthor\">", "", -1)
 			author = strings.Replace(author, "</b>", "", -1)
-//			log.Println(author)
 			postAuthor = author
 		}
 
@@ -154,17 +145,12 @@ func parseMessage(bodyStringsHTML []string) string {
 
 				body = cleanMessageQuote(body)
 				body = cleanMessageStyle(body)
-//				log.Println(body)
 				postBody = body
 			}
 		}
 	}
 
-	log.Println(postThem)
-	log.Println(postAuthor)
-	log.Println(postBody)
-
-	return postThem+postAuthor+postBody
+	return "__" + postThem + "__\n**" + postAuthor + "**\n" + postBody
 }
 
 func cleanMessageQuote(postMessage string) string {

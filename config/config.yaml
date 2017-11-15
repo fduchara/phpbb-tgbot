@@ -1,7 +1,5 @@
 BotToken:	"telegram token"
 ChatId:		chat id(int64)
-UrlLogin:	"http://your server/forum/ucp.php?mode=login"
-UrlFindNew:	"http://your server/forum/search.php?search_id=unreadposts"
-UrlMarkRead:	"http://your server/forum/index.php?mark=forums"
+ForumUrl:	"http://domain/forum"
 UserName:	"username"
 Password:	"password"
