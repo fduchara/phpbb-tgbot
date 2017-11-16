@@ -13,16 +13,13 @@ import (
 
 var (
 	configFile = flag.String("c", "config.yml", "config file") // читаем переданные параметры.
-	confDeug   = flag.Bool("v", false, "debug log")
+	confDebug = flag.Int("v", 0, "debug log level 0-3")
 )
 
 type ConfigStr struct { // структура файла конфига
 	BotToken    string `yaml:"BotToken"`
 	ChatId      int64  `yaml:"ChatId"`
 	ForumUrl	string `yaml:"ForumUrl"`
-	UrlLogin    string `yaml:"UrlLogin"`
-	UrlFindNew  string `yaml:"UrlFindNew"`
-	UrlMarkRead string `yaml:"UrlMarkRead"`
 	UserName    string `yaml:"UserName"`
 	Password    string `yaml:"Password"`
 }
@@ -37,9 +34,11 @@ func main() {
 		log.Panic(err)
 	}
 
-	bot.Debug = *confDeug
+	if *confDebug > 0 {
+		bot.Debug = true
+	}
 
-	if *confDeug {
+	if *confDebug > 0 {
 		log.Printf("Authorized on account %s", bot.Self.UserName)
 	}
 
@@ -48,8 +47,8 @@ func main() {
 
 	go func() {
 		for {
-			reply := parseforum.GetNew(Conf.ForumUrl, Conf.UserName, Conf.Password, *confDeug)
-			if *confDeug {
+			reply := parseforum.GetNew(Conf.ForumUrl, Conf.UserName, Conf.Password, *confDebug)
+			if *confDebug > 0 {
 				log.Printf("GetNew return: " + reply)
 			}
 			if reply != "" {
@@ -64,9 +63,13 @@ func main() {
 
 /*	go func() {
 		for {
-			reply := parseforum.GetNew(Conf.ForumUrl, Conf.UserName, Conf.Password, *confDeug)
-			if *confDeug {
+			reply := parseforum.GetNew(Conf.ForumUrl, Conf.UserName, Conf.Password, *confDebug)
+			if *confDebug > 0 {
 				log.Printf("GetNew return: " + reply)
+			}
+			if reply != "" {
+				reply = "Новое сообщение на форуме: \n" + reply
+				log.Println(reply)
 			}
 			time.Sleep(60000 * time.Millisecond)
 		}
@@ -78,13 +81,13 @@ func main() {
 		if update.Message != nil {
 			switch update.Message.Command() {
 			case "start":
-				reply := "hi im bot"
+				reply := "Hi im bot!"
 				msg := tgbotapi.NewMessage(update.Message.Chat.ID, reply)
 				bot.Send(msg)
 			case "new":
 				reply := "Проверка сообщений. \n Новое сообщение на форуме в теме: "
-				reply += parseforum.GetNew(Conf.ForumUrl, Conf.UserName, Conf.Password, *confDeug)
-				if *confDeug {
+				reply += parseforum.GetNew(Conf.ForumUrl, Conf.UserName, Conf.Password, *confDebug)
+				if *confDebug > 0 {
 					log.Printf("GetNew return: " + reply)
 				}
 				msg := tgbotapi.NewMessage(Conf.ChatId, reply)
@@ -96,7 +99,7 @@ func main() {
 }
 
 func ReadConf() ConfigStr {
-	if *confDeug {
+	if *confDebug > 0 {
 		log.Print("Open config file")
 	}
 	data, err := ioutil.ReadFile(*configFile)
@@ -104,14 +107,14 @@ func ReadConf() ConfigStr {
 		log.Fatal(err)
 	}
 	var Conf ConfigStr
-	if *confDeug {
+	if *confDebug > 1 {
 		log.Print("Parse config file")
 	}
 	err = yaml.Unmarshal([]byte(data), &Conf)
 	if err != nil {
 		log.Fatal(err)
 	}
-	if *confDeug {
+	if *confDebug > 1 {
 		log.Println(Conf)
 	}
 	return Conf
